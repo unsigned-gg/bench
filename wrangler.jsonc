@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "unsigned-bench",
+  "account_id": "07ae57cca8fc1a438f9c9b875d1e2283",
+  "compatibility_date": "2026-06-20",
+  "assets": {
+    "directory": "./public"
+  },
+  "routes": [
+    { "pattern": "bench.unsigned.gg", "custom_domain": true }
+  ]
+}

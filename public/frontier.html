@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐡</text></svg>">
+<title>frontier leaderboard — benchmarks nobody asked for</title>
+<style>
+  :root {
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --bar-base: #86b6ef;
+    --bar-mtp: #2a78d6;
+    --gold: #b8860b;
+    --gold-bg: rgba(184,134,11,0.10);
+    --delta-good: #006300;
+    --warn-bg: rgba(184,134,11,0.09);
+    --warn-bd: rgba(184,134,11,0.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+      --muted: #898781; --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+      --bar-base: #184f95; --bar-mtp: #3987e5; --gold: #e3b341; --gold-bg: rgba(227,179,65,0.12);
+      --delta-good: #0ca30c; --warn-bg: rgba(227,179,65,0.09); --warn-bd: rgba(227,179,65,0.30);
+    }
+  }
+  :root[data-theme="light"] {
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e;
+    --muted: #898781; --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+    --bar-base: #86b6ef; --bar-mtp: #2a78d6; --gold: #b8860b; --gold-bg: rgba(184,134,11,0.10);
+    --delta-good: #006300; --warn-bg: rgba(184,134,11,0.09); --warn-bd: rgba(184,134,11,0.35);
+  }
+  :root[data-theme="dark"] {
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --bar-base: #184f95; --bar-mtp: #3987e5; --gold: #e3b341; --gold-bg: rgba(227,179,65,0.12);
+    --delta-good: #0ca30c; --warn-bg: rgba(227,179,65,0.09); --warn-bd: rgba(227,179,65,0.30);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 40px 20px 72px;
+  }
+  .mono { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace; }
+  .wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+  nav { display: flex; gap: 4px; font-family: ui-monospace, monospace; font-size: 12.5px; margin-bottom: 4px; }
+  nav a {
+    color: var(--muted); text-decoration: none; padding: 4px 10px; border-radius: 7px;
+    border: 1px solid transparent;
+  }
+  nav a:hover { color: var(--ink); }
+  nav a[aria-current="page"] { color: var(--ink); border-color: var(--border); background: var(--surface); }
+
+  header { margin-bottom: 8px; }
+  .eyebrow {
+    font-family: ui-monospace, monospace; font-size: 11.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 6px;
+  }
+  h1 { font-size: 26px; font-weight: 650; margin: 0 0 4px; letter-spacing: -0.01em; text-wrap: balance; }
+  .meta { color: var(--ink-2); font-size: 13.5px; margin: 0; }
+  .meta .sep { color: var(--muted); margin: 0 6px; }
+
+  .callout {
+    background: var(--warn-bg); border: 1px solid var(--warn-bd); border-radius: 10px;
+    padding: 12px 16px; font-size: 13.5px; color: var(--ink-2); line-height: 1.5;
+  }
+  .callout b { color: var(--ink); }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tile {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px 12px;
+  }
+  .tile .label { font-size: 12.5px; color: var(--ink-2); margin: 0 0 2px; }
+  .tile .value { font-size: 27px; font-weight: 600; letter-spacing: -0.01em; }
+  .tile .value small { font-size: 14px; font-weight: 500; color: var(--ink-2); margin-left: 2px; }
+  .tile .sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 20px 14px; position: relative;
+  }
+  .card h2 { font-size: 15.5px; font-weight: 620; margin: 0 0 2px; }
+  .card .sub { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+
+  svg { display: block; width: 100%; height: auto; }
+  svg text { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace; }
+  .row-band { fill: transparent; }
+  .row-band:hover { fill: var(--grid); fill-opacity: 0.35; }
+
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 10; display: none;
+    background: var(--ink); color: var(--page); border-radius: 6px;
+    padding: 7px 10px; font-size: 12.5px; line-height: 1.45; max-width: 280px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  }
+  .tooltip b { font-weight: 650; }
+
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: right; padding: 7px 12px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 550; font-size: 12px; }
+  th:first-child, td:first-child { text-align: left; padding-left: 2px; }
+  td.num { font-variant-numeric: tabular-nums; font-family: ui-monospace, monospace; font-size: 12.5px; }
+  tr:last-child td { border-bottom: none; }
+  .dim { color: var(--muted); }
+  td.win { color: var(--gold); font-weight: 700; background: var(--gold-bg); }
+  td.runner { text-decoration: underline; text-underline-offset: 2px; }
+  .crown { font-size: 11px; }
+
+  .cand { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .cand .item {
+    border: 1px dashed var(--border); border-radius: 9px; padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .cand .top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .cand .name { font-weight: 620; font-size: 14.5px; }
+  .cand .badge {
+    font-family: ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--gold); border: 1px solid var(--warn-bd);
+    border-radius: 999px; padding: 1px 8px;
+  }
+  .cand .facts { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; }
+  .cand .quip { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+
+  footer { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  footer code { font-family: ui-monospace, monospace; font-size: 11.5px; }
+  .loerr { color: var(--gold); font-size: 13px; }
+
+  /* provenance badges */
+  .vbadge {
+    font-family: ui-monospace, monospace; font-size: 10px; letter-spacing: 0.04em;
+    padding: 1px 7px; border-radius: 999px; white-space: nowrap; border: 1px solid transparent;
+  }
+  .v-independent  { color: #0ca30c; border-color: rgba(12,163,12,0.45);  background: rgba(12,163,12,0.10); }
+  .v-corroborated { color: #2a78d6; border-color: rgba(42,120,214,0.45); background: rgba(42,120,214,0.10); }
+  .v-self         { color: #d84a4a; border-color: rgba(216,74,74,0.45);  background: rgba(216,74,74,0.10); }
+  .v-disputed     { color: var(--gold); border-color: var(--warn-bd);    background: var(--warn-bg); }
+
+  .legend-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 7px;
+  }
+  .legend-card .lg-title { font-size: 12.5px; font-weight: 620; margin-bottom: 2px; }
+  .legend-card .lg-keys { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .legend-card .lg-txt { font-size: 12.5px; color: var(--ink-2); }
+
+  th .vbadge { margin-top: 4px; display: inline-block; font-weight: 500; }
+  th .th-model { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+
+  #swe-pro td:last-child { white-space: normal; min-width: 260px; }
+
+  .why-list { display: flex; flex-direction: column; gap: 10px; }
+  .why-item { border-left: 3px solid var(--grid); padding: 4px 0 4px 12px; }
+  .why-item.hot { border-left-color: var(--gold); }
+  .why-item .wh-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .why-item .wh-name { font-weight: 620; font-size: 14px; }
+  .why-item .wh-star { color: var(--gold); }
+  .why-item .wh-why { font-size: 13px; color: var(--ink-2); line-height: 1.5; margin-top: 3px; }
+</style>
+
+</head><body>
+<div class="wrap">
+  <nav>
+    <a href="/">← local bank</a>
+    <a href="/frontier" aria-current="page">frontier</a>
+  </nav>
+
+  <header>
+    <p class="eyebrow">unsigned.gg // benchmarks nobody asked for</p>
+    <h1>The Frontier Leaderboard</h1>
+    <p class="meta">the models we can't run at home<span class="sep">·</span>higher is better, allegedly<span class="sep">·</span>snapshot <span id="snap">2026-07</span></p>
+  </header>
+
+  <div class="callout">
+    🐡 <b>What is "Fugu"?</b> Turns out it's real: <b>Sakana AI's</b> Fugu Ultra,
+    launched June 2026. The catch — it's a <b>router over a pool of models, not a
+    single LLM</b>, so a big score can be great routing as much as raw ability.
+    And every number in this chart is <b>Sakana-reported</b> from a deck that
+    quietly omits Claude Mythos 5 (80.3) and Fable 5 (80.0) — the two models that
+    actually top SWE-bench Pro. <b>Provenance: the vendor.</b> Scroll down for the
+    independently-tracked board with the missing rows put back.
+  </div>
+
+  <div class="legend-card">
+    <div class="lg-title">How to read the provenance badges</div>
+    <div class="lg-keys">
+      <span class="vbadge v-independent">independent</span>
+      <span class="lg-txt">measured by a neutral third party (or by us, on our own 5090)</span>
+    </div>
+    <div class="lg-keys">
+      <span class="vbadge v-corroborated">corroborated</span>
+      <span class="lg-txt">vendor placed the number, but it matches an independent tracker</span>
+    </div>
+    <div class="lg-keys">
+      <span class="vbadge v-self">self-reported ⚠ COI</span>
+      <span class="lg-txt">reported by the model's own maker; conflict of interest, not reproduced</span>
+    </div>
+    <div class="lg-keys">
+      <span class="vbadge v-disputed">disputed</span>
+      <span class="lg-txt">independent sources contradict the label or the number</span>
+    </div>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <h2>Who won what</h2>
+    <p class="sub">outright wins per model across every row · ties count for everyone who tied (looking at you, GPQA)</p>
+    <svg id="winsChart" viewBox="0 0 920 220" role="img" aria-label="Bar chart of benchmark wins per model"></svg>
+  </div>
+
+  <div class="card">
+    <h2>The whole table</h2>
+    <p class="sub"><span style="color:var(--gold);font-weight:700">gold</span> = row winner · <span style="text-decoration:underline;text-underline-offset:2px">underline</span> = runner-up · everyone else gets participation</p>
+    <div class="tbl-wrap">
+      <table id="leaderboard">
+        <thead><tr id="lb-head"></tr></thead>
+        <tbody id="lb-body"><tr><td class="loerr mono">loading numbers off the napkin…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Same benchmark, independently tracked <span class="vbadge v-independent">independent</span></h2>
+    <p class="sub" id="swe-sub">SWE-bench Pro, from a neutral tracker — with the rows the vendor chart left out</p>
+    <div class="tbl-wrap">
+      <table id="swe-pro">
+        <thead><tr><th>model</th><th>SWE-bench Pro</th><th style="text-align:left">provenance</th></tr></thead>
+        <tbody id="swe-body"><tr><td class="loerr mono">loading the honest board…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="sub" id="swe-cite" style="margin-top:10px"></p>
+  </div>
+
+  <div class="card">
+    <h2>Which models are actually interesting</h2>
+    <p class="sub">not "who scored highest" — who's worth a second look, and why</p>
+    <div class="why-list" id="whylist"></div>
+  </div>
+
+  <div class="card">
+    <h2>On the bench (literally)</h2>
+    <p class="sub">candidates loitering near the hardware, waiting for the 5090 to form an opinion</p>
+    <div class="cand" id="candidates"></div>
+  </div>
+
+  <footer id="footer">
+    Data: <code>public/data/frontier.json</code> · <code>public/data/swe-pro.json</code> · <code>public/data/candidates.json</code><br>
+    Sources: frontier chart is <b>Sakana AI, vendor-reported</b> (June 2026) ·
+    independent SWE-bench Pro via <b>BenchLM.ai</b> (2026-07-04) ·
+    Intelligence Index via <b>Artificial Analysis</b> · Fugu reproduction caveats via <b>remoteopenclaw</b>.
+    No models were harmed; several were caught grading their own homework.
+  </footer>
+</div>
+
+<div class="tooltip" id="tip"></div>
+
+<script>
+(function () {
+  const NS = "http://www.w3.org/2000/svg";
+  const tip = document.getElementById("tip");
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+  function el(parent, tag, attrs) {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    parent.appendChild(n);
+    return n;
+  }
+  function hBarPath(x, y, w, h) {
+    const r = Math.min(4, Math.max(0, w));
+    return `M${x},${y} h${w - r} a${r},${r} 0 0 1 ${r},${r} v${h - 2 * r} a${r},${r} 0 0 1 -${r},${r} h-${w - r} Z`;
+  }
+  function showTip(evt, html) {
+    tip.innerHTML = html; tip.style.display = "block";
+    const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
+    let x = evt.clientX + pad, y = evt.clientY - h - 10;
+    if (x + w > innerWidth - 8) x = evt.clientX - w - pad;
+    if (y < 8) y = evt.clientY + pad;
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  }
+  function hideTip() { tip.style.display = "none"; }
+
+  // rank a row: winners = all at the max; runners = all at the next distinct value
+  function rank(scores) {
+    const max = Math.max(...scores);
+    const rest = scores.filter(s => s < max);
+    const second = rest.length ? Math.max(...rest) : -Infinity;
+    return scores.map(s => s === max ? "win" : (s === second ? "runner" : ""));
+  }
+
+  let FRONTIER = null;
+
+  const VBADGE = {
+    "independent":  { cls: "v-independent",  txt: "independent" },
+    "corroborated": { cls: "v-corroborated", txt: "corroborated" },
+    "self-reported":{ cls: "v-self",         txt: "self-reported ⚠" },
+    "disputed":     { cls: "v-disputed",     txt: "disputed" }
+  };
+  function badgeHTML(v) {
+    const b = VBADGE[v]; return b ? `<span class="vbadge ${b.cls}">${b.txt}</span>` : "";
+  }
+  const FLAG_TO_V = {
+    "independent": "independent", "self-reported": "self-reported",
+    "omitted-from-vendor-chart": "independent", "disputed": "disputed"
+  };
+
+  function drawWins() {
+    if (!FRONTIER) return;
+    const { models, benchmarks } = FRONTIER;
+    const wins = models.map(() => 0);
+    benchmarks.forEach(b => rank(b.scores).forEach((r, i) => { if (r === "win") wins[i]++; }));
+
+    const svg = document.getElementById("winsChart");
+    svg.innerHTML = "";
+    const W = 920, H = 220, left = 130, right = 96, top = 8, bottom = 8;
+    const plotW = W - left - right, plotH = H - top - bottom;
+    const max = Math.max(...wins, 1), rowH = plotH / models.length;
+    const x = v => left + (v / max) * plotW;
+
+    models.forEach((m, i) => {
+      const cy = top + i * rowH + rowH / 2, bh = 20;
+      const lbl = el(svg, "text", { x: left - 12, y: cy + 4, "text-anchor": "end", "font-size": 12.5, fill: css("--ink") });
+      lbl.textContent = m;
+      const w = Math.max(x(wins[i]) - left, wins[i] > 0 ? 2 : 0);
+      if (w > 0) el(svg, "path", { d: hBarPath(left, cy - bh / 2, w, bh), fill: wins[i] === max ? css("--gold") : css("--bar-mtp") });
+      const vt = el(svg, "text", { x: (wins[i] > 0 ? x(wins[i]) : left) + 7, y: cy + 4, "font-size": 12, fill: css("--ink-2") });
+      vt.textContent = wins[i] + (wins[i] === 1 ? " win" : " wins") + (wins[i] === 0 ? " (rough)" : "");
+      const band = el(svg, "rect", { x: 0, y: top + i * rowH, width: W, height: rowH, class: "row-band" });
+      band.addEventListener("mousemove", e => showTip(e, `<b>${m}</b><br>${wins[i]} outright win${wins[i] === 1 ? "" : "s"} of ${benchmarks.length}`));
+      band.addEventListener("mouseleave", hideTip);
+    });
+  }
+
+  function renderTable() {
+    if (!FRONTIER) return;
+    const { models, benchmarks } = FRONTIER;
+    const src = FRONTIER.model_sources || {};
+    const head = document.getElementById("lb-head");
+    head.innerHTML = "<th>benchmark</th>" + models.map(m => {
+      const v = (src[m] && src[m].verification) || "";
+      return `<th><span class="th-model">${m}${badgeHTML(v)}</span></th>`;
+    }).join("");
+    const body = document.getElementById("lb-body");
+    body.innerHTML = benchmarks.map(b => {
+      const cls = rank(b.scores);
+      const cells = b.scores.map((s, i) =>
+        `<td class="num ${cls[i]}">${cls[i] === "win" ? '<span class="crown">👑</span> ' : ""}${s.toFixed(1)}</td>`).join("");
+      return `<tr><td class="mono">${b.name}</td>${cells}</tr>`;
+    }).join("");
+  }
+
+  function renderTiles() {
+    if (!FRONTIER) return;
+    const { models, benchmarks } = FRONTIER;
+    const wins = models.map(() => 0);
+    benchmarks.forEach(b => rank(b.scores).forEach((r, i) => { if (r === "win") wins[i]++; }));
+    const top = wins.indexOf(Math.max(...wins));
+    const worst = wins.indexOf(Math.min(...wins));
+    // biggest blowout gap on any single row
+    let blow = { name: "", gap: 0, leader: "" };
+    benchmarks.forEach(b => {
+      const gap = Math.max(...b.scores) - Math.min(...b.scores);
+      if (gap > blow.gap) blow = { name: b.name, gap, leader: models[b.scores.indexOf(Math.max(...b.scores))] };
+    });
+    const tiles = [
+      { label: "Board leader", value: models[top], sub: wins[top] + " of " + benchmarks.length + " rows" },
+      { label: "Benchmarks tracked", value: benchmarks.length, sub: models.length + " models, 0 error bars" },
+      { label: "Won nothing", value: models[worst], sub: wins[worst] === 0 ? "brought a knife to a gunfight" : wins[worst] + " wins" },
+      { label: "Biggest blowout", value: "+" + blow.gap.toFixed(1), sub: blow.name.replace(/<[^>]*>/g, "") }
+    ];
+    document.getElementById("tiles").innerHTML = tiles.map(t =>
+      `<div class="tile"><p class="label">${t.label}</p><div class="value mono" style="font-size:20px">${t.value}</div><div class="sub">${t.sub}</div></div>`).join("");
+  }
+
+  function renderCandidates(data) {
+    const box = document.getElementById("candidates");
+    if (!data || !data.candidates || !data.candidates.length) {
+      box.innerHTML = '<div class="item"><span class="quip">Bench is empty. Suspiciously empty.</span></div>';
+      return;
+    }
+    box.innerHTML = data.candidates.map(c => `
+      <div class="item">
+        <div class="top">
+          <span class="name">${c.name}</span>
+          <span class="badge">${c.status || "candidate"}</span>
+          ${badgeHTML(c.verification)}
+        </div>
+        <div class="facts">${[c.params, c.context, c.license, c.repo + "@" + c.rev].filter(Boolean).join("  ·  ")}</div>
+        <div class="quip">${c.quip || ""}</div>
+      </div>`).join("");
+  }
+
+  function renderSwePro(data) {
+    const body = document.getElementById("swe-body");
+    if (!data || !data.rows) { body.innerHTML = '<tr><td class="loerr mono">no independent board found.</td></tr>'; return; }
+    const max = Math.max(...data.rows.map(r => r.score));
+    body.innerHTML = data.rows.map(r => {
+      const v = FLAG_TO_V[r.flag] || "";
+      const win = r.score === max ? "win" : "";
+      const note = r.note ? ` <span class="dim">— ${r.note}</span>` : "";
+      return `<tr>
+        <td class="mono">${r.model}</td>
+        <td class="num ${win}">${r.score.toFixed(1)}</td>
+        <td style="text-align:left">${badgeHTML(v)}${note}</td>
+      </tr>`;
+    }).join("");
+    document.getElementById("swe-sub").textContent = data.note || "";
+    document.getElementById("swe-cite").innerHTML =
+      "Source: " + (data.source || "") + (data.url ? ` · <code>${data.url}</code>` : "") + " · as of " + (data.as_of || "");
+  }
+
+  function renderWhy() {
+    if (!FRONTIER) return;
+    const src = FRONTIER.model_sources || {};
+    const items = Object.keys(src).map(name => ({ name, ...src[name] }))
+      .sort((a, b) => (b.interesting === true) - (a.interesting === true));
+    document.getElementById("whylist").innerHTML = items.map(m => `
+      <div class="why-item ${m.interesting ? "hot" : ""}">
+        <div class="wh-top">
+          <span class="wh-name">${m.interesting ? '<span class="wh-star">★</span> ' : ""}${m.name}</span>
+          ${badgeHTML(m.verification)}
+        </div>
+        <div class="wh-why">${m.why || ""}</div>
+      </div>`).join("");
+  }
+
+  function redraw() { drawWins(); }
+
+  Promise.all([
+    fetch("data/frontier.json").then(r => r.json()),
+    fetch("data/candidates.json").then(r => r.json()).catch(() => null),
+    fetch("data/swe-pro.json").then(r => r.json()).catch(() => null)
+  ]).then(([frontier, candidates, swe]) => {
+    FRONTIER = frontier;
+    document.getElementById("snap").textContent = frontier.snapshot || "";
+    renderTiles(); renderTable(); drawWins(); renderWhy(); renderSwePro(swe); renderCandidates(candidates);
+  }).catch(err => {
+    document.getElementById("lb-body").innerHTML =
+      '<tr><td class="loerr mono">the napkin is unreadable (' + err + '). the numbers were probably made up anyway.</td></tr>';
+  });
+
+  new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
+})();
+</script>
+</body></html>

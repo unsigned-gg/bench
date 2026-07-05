@@ -1,0 +1,74 @@
+name: deploy
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # gitleaks needs full history
+      - name: validate benchmark data (JSON well-formed + score rows aligned)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in public/data/*.json; do
+            jq -e . "$f" >/dev/null || { echo "::error file=$f::invalid JSON"; exit 1; }
+          done
+          # frontier: every benchmark row must have one score per model
+          jq -e '(.models|length) as $m | all(.benchmarks[]; (.scores|length)==$m)' \
+            public/data/frontier.json >/dev/null \
+            || { echo "::error::frontier.json score rows do not match model count"; exit 1; }
+          echo "data OK"
+      - name: build dry-run (wrangler, no deploy, no auth)
+        run: npx --yes wrangler@4.107.0 deploy --dry-run --outdir /tmp/wr-build
+      - name: gitleaks (free CLI, pinned)
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o gitleaks.tar.gz
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf gitleaks.tar.gz gitleaks
+          ./gitleaks git . --redact --no-banner --verbose
+
+  deploy:
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Gate on the secret so CI stays green until the token is added, rather
+      # than hard-failing every push. Job-level `if` can't read secrets, so we
+      # bounce the secret through env and check it in a step.
+      - name: check deploy credentials
+        id: guard
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: |
+          if [ -n "${CF_TOKEN:-}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::CLOUDFLARE_API_TOKEN not set — skipping deploy. Add the secret to enable auto-deploy to bench.unsigned.gg."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: deploy to bench.unsigned.gg
+        if: steps.guard.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: "4.107.0"

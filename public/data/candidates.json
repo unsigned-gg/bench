@@ -1,0 +1,19 @@
+{
+  "note": "models loitering near the bench, waiting to be run. graduate to the local bank once the 5090 has an opinion.",
+  "candidates": [
+    {
+      "name": "Qwythos-9B",
+      "repo": "empero-ai/Qwythos-9B-Claude-Mythos-5-1M",
+      "rev": "763f72fc2c3b",
+      "params": "9B",
+      "context": "1M (YaRN ×4)",
+      "license": "apache-2.0",
+      "status": "unverified",
+      "verification": "self-reported",
+      "coi": true,
+      "interesting": true,
+      "why": "A 9B claiming distillation from Claude traces with a 1M window — genuinely interesting IF the numbers hold. They probably don't (see quip), but it's the most interesting thing on the bench because it's the one we can actually run and check ourselves.",
+      "quip": "Claims +34 MMLU over a base that scored 0.232 — below coin-flip. Bold to lead with a number that means your control group forgot how multiple choice works. We'll believe it when the 5090 does."
+    }
+  ]
+}

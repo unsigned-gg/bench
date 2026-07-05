@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏦</text></svg>">
+<title>model bank — bench metrics</title>
+<style>
+  :root {
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --bar-base: #86b6ef;
+    --bar-mtp: #2a78d6;
+    --delta-good: #006300;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --axis: #383835;
+      --border: rgba(255,255,255,0.10);
+      --bar-base: #184f95;
+      --bar-mtp: #3987e5;
+      --delta-good: #0ca30c;
+    }
+  }
+  :root[data-theme="light"] {
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e;
+    --muted: #898781; --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+    --bar-base: #86b6ef; --bar-mtp: #2a78d6; --delta-good: #006300;
+  }
+  :root[data-theme="dark"] {
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --bar-base: #184f95; --bar-mtp: #3987e5; --delta-good: #0ca30c;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 40px 20px 72px;
+  }
+  .mono { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace; }
+  .wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+  header { margin-bottom: 8px; }
+  .eyebrow {
+    font-family: ui-monospace, monospace; font-size: 11.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 6px;
+  }
+  h1 { font-size: 26px; font-weight: 650; margin: 0 0 4px; letter-spacing: -0.01em; text-wrap: balance; }
+  .meta { color: var(--ink-2); font-size: 13.5px; margin: 0; }
+  .meta .sep { color: var(--muted); margin: 0 6px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tile {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px 12px;
+  }
+  .tile .label { font-size: 12.5px; color: var(--ink-2); margin: 0 0 2px; }
+  .tile .value { font-size: 27px; font-weight: 600; letter-spacing: -0.01em; }
+  .tile .value small { font-size: 14px; font-weight: 500; color: var(--ink-2); margin-left: 2px; }
+  .tile .sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .tile .delta-good { color: var(--delta-good); font-weight: 600; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 20px 14px; position: relative;
+  }
+  .card h2 { font-size: 15.5px; font-weight: 620; margin: 0 0 2px; }
+  .card .sub { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+
+  .legend { display: flex; gap: 16px; align-items: center; margin: 0 0 10px; font-size: 12.5px; color: var(--ink-2); }
+  .legend .key { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  .two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .two-up { grid-template-columns: 1fr; } }
+
+  svg { display: block; width: 100%; height: auto; }
+  svg text { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace; }
+  .row-band { fill: transparent; }
+  .row-band:hover { fill: var(--grid); fill-opacity: 0.35; }
+  @media (prefers-reduced-motion: no-preference) {
+    .bar { transition: opacity 120ms ease; }
+  }
+
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 10; display: none;
+    background: var(--ink); color: var(--page); border-radius: 6px;
+    padding: 7px 10px; font-size: 12.5px; line-height: 1.45; max-width: 260px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  }
+  .tooltip b { font-weight: 650; }
+
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: right; padding: 7px 12px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 550; font-size: 12px; }
+  th:first-child, td:first-child { text-align: left; padding-left: 2px; }
+  td.num { font-variant-numeric: tabular-nums; font-family: ui-monospace, monospace; font-size: 12.5px; }
+  tr:last-child td { border-bottom: none; }
+  .dim { color: var(--muted); }
+  .up { color: var(--delta-good); font-weight: 600; }
+
+  nav { display: flex; gap: 4px; font-family: ui-monospace, monospace; font-size: 12.5px; margin-bottom: 4px; }
+  nav a { color: var(--muted); text-decoration: none; padding: 4px 10px; border-radius: 7px; border: 1px solid transparent; }
+  nav a:hover { color: var(--ink); }
+  nav a[aria-current="page"] { color: var(--ink); border-color: var(--border); background: var(--surface); }
+
+  footer { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  footer code { font-family: ui-monospace, monospace; font-size: 11.5px; }
+</style>
+
+</head><body>
+<div class="wrap">
+  <nav>
+    <a href="/" aria-current="page">local bank</a>
+    <a href="/frontier">frontier →</a>
+  </nav>
+  <header>
+    <p class="eyebrow">agentic / local-models</p>
+    <h1>Model bank — bench metrics</h1>
+    <p class="meta">RTX 5090 32 GB<span class="sep">·</span>ollama 0.31.1 (CUDA)<span class="sep">·</span>UD-Q4_K_XL quants<span class="sep">·</span>256-token decode, warm<span class="sep">·</span>2026-07-04</p>
+  </header>
+
+  <div class="tiles">
+    <div class="tile">
+      <p class="label">Peak decode</p>
+      <div class="value">217<small>tok/s</small></div>
+      <div class="sub mono">GLM-4.7-Flash</div>
+    </div>
+    <div class="tile">
+      <p class="label">Best MTP gain</p>
+      <div class="value delta-good">+70%</div>
+      <div class="sub mono">Qwen3.6-35B · 58 → 99</div>
+    </div>
+    <div class="tile">
+      <p class="label">Models banked</p>
+      <div class="value">5</div>
+      <div class="sub">76 GB · mirrored to HF</div>
+    </div>
+    <div class="tile">
+      <p class="label">Engine upgrade</p>
+      <div class="value delta-good">+56%</div>
+      <div class="sub mono">gemma4 · 0.20.5 → 0.31.1</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Decode speed by model</h2>
+    <p class="sub">tokens/second, single stream · MTP = multi-token-prediction speculative decoding (draft-mtp)</p>
+    <div class="legend">
+      <span class="key"><span class="sw" style="background:var(--bar-base)"></span>baseline decode</span>
+      <span class="key"><span class="sw" style="background:var(--bar-mtp)"></span>with MTP drafting</span>
+    </div>
+    <svg id="speedChart" viewBox="0 0 920 330" role="img" aria-label="Grouped bar chart of decode speed per model, baseline versus MTP speculative decoding"></svg>
+  </div>
+
+  <div class="two-up">
+    <div class="card">
+      <h2>Draft acceptance by position</h2>
+      <p class="sub">P(token k accepted | k−1 accepted) · Qwen3.6-27B, draft_num_predict 4</p>
+      <svg id="accChart" viewBox="0 0 420 240" role="img" aria-label="Column chart of draft acceptance probability by draft position, decaying from 0.77 to 0.28"></svg>
+    </div>
+    <div class="card">
+      <h2>Acceptance summary</h2>
+      <p class="sub">per-run drafting statistics from the serve log</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>model</th><th>acceptance</th><th>mean len</th><th>speedup</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">Qwen3.6-27B</td><td class="num">0.55</td><td class="num">3.00</td><td class="num up">+60%</td></tr>
+            <tr><td class="mono">Qwen3.6-35B-A3B</td><td class="num">0.47</td><td class="num">2.89</td><td class="num up">+70%</td></tr>
+            <tr><td class="mono">Qwen3.5-9B</td><td class="num">0.36–0.47</td><td class="num">2.4–2.9</td><td class="num dim">n/m</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="sub" style="margin-top:10px">Acceptance decays fast past position 2 — <span class="mono">draft_num_predict 2–3</span> is the tuning lever if verification overhead shows up at higher batch sizes.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Full table</h2>
+    <p class="sub">everything measured, including what the charts summarize</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>model</th><th>size</th><th>baseline tok/s</th><th>MTP tok/s</th><th>Δ</th><th>acceptance</th><th>note</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">GLM-4.7-Flash</td><td class="num">17 GB</td><td class="num">217</td><td class="num dim">—</td><td class="num dim">—</td><td class="num dim">—</td><td class="dim" style="text-align:left">fastest banked; MoE, no MTP head</td></tr>
+          <tr><td class="mono">Qwen3.5-9B-MTP</td><td class="num">6 GB</td><td class="num dim">n/m</td><td class="num">174</td><td class="num dim">—</td><td class="num">0.36–0.47</td><td class="dim" style="text-align:left">T0 utility tier</td></tr>
+          <tr><td class="mono">Qwen3.6-27B-MTP</td><td class="num">17 GB</td><td class="num">68</td><td class="num">110</td><td class="num up">+60%</td><td class="num">0.55</td><td class="dim" style="text-align:left">dense T1 daily driver</td></tr>
+          <tr><td class="mono">Qwen3.6-35B-A3B-MTP</td><td class="num">22 GB</td><td class="num">58</td><td class="num">99</td><td class="num up">+70%</td><td class="num">0.47</td><td class="dim" style="text-align:left">T2 flagship; needs OLLAMA_LOAD_TIMEOUT=15m</td></tr>
+          <tr><td class="mono">Devstral-Small-2-24B</td><td class="num">14 GB</td><td class="num">86</td><td class="num dim">—</td><td class="num dim">—</td><td class="num dim">—</td><td class="dim" style="text-align:left">agent-tuned; banked for tool discipline</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    Source of truth: <code>packages/local-models/MODELS.md</code> (commits <code>481ed3c</code>, <code>ef98c24</code>) · weights mirrored at <code>hf.co/todie/model-bank</code> · n/m = not measured
+  </footer>
+</div>
+
+<div class="tooltip" id="tip"></div>
+
+<script>
+(function () {
+  const models = [
+    { name: "GLM-4.7-Flash",       base: 217,  mtp: null, note: "no MTP head — plain decode" },
+    { name: "Qwen3.5-9B-MTP",      base: null, mtp: 174,  note: "baseline not measured" },
+    { name: "Qwen3.6-27B-MTP",     base: 68,   mtp: 110,  note: "acceptance 0.55 · mean len 3.00" },
+    { name: "Qwen3.6-35B-A3B-MTP", base: 58,   mtp: 99,   note: "acceptance 0.47 · mean len 2.89" },
+    { name: "Devstral-2-24B",      base: 86,   mtp: null, note: "agent-tuned — no MTP head" }
+  ];
+
+  const NS = "http://www.w3.org/2000/svg";
+  const tip = document.getElementById("tip");
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+  function el(parent, tag, attrs) {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    parent.appendChild(n);
+    return n;
+  }
+  // horizontal bar: square at baseline (left), 4px rounded data-end (right)
+  function hBarPath(x, y, w, h) {
+    const r = Math.min(4, w);
+    return `M${x},${y} h${w - r} a${r},${r} 0 0 1 ${r},${r} v${h - 2 * r} a${r},${r} 0 0 1 -${r},${r} h-${w - r} Z`;
+  }
+  // vertical column: square at baseline (bottom), 4px rounded cap (top)
+  function vBarPath(x, y, w, h) {
+    const r = Math.min(4, h);
+    return `M${x},${y + h} v-${h - r} a${r},${r} 0 0 1 ${r},-${r} h${w - 2 * r} a${r},${r} 0 0 1 ${r},${r} v${h - r} Z`;
+  }
+  function showTip(evt, html) {
+    tip.innerHTML = html;
+    tip.style.display = "block";
+    const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
+    let x = evt.clientX + pad, y = evt.clientY - h - 10;
+    if (x + w > innerWidth - 8) x = evt.clientX - w - pad;
+    if (y < 8) y = evt.clientY + pad;
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+  }
+  function hideTip() { tip.style.display = "none"; }
+
+  /* ---- speed chart ---- */
+  function drawSpeed() {
+    const svg = document.getElementById("speedChart");
+    svg.innerHTML = "";
+    const W = 920, H = 330, left = 190, right = 46, top = 8, bottom = 26;
+    const plotW = W - left - right, plotH = H - top - bottom;
+    const max = 250, rowH = plotH / models.length;
+    const x = v => left + (v / max) * plotW;
+
+    for (let g = 0; g <= max; g += 50) {
+      el(svg, "line", { x1: x(g), y1: top, x2: x(g), y2: top + plotH,
+        stroke: g === 0 ? css("--axis") : css("--grid"), "stroke-width": 1 });
+      const t = el(svg, "text", { x: x(g), y: H - 8, "text-anchor": "middle",
+        "font-size": 11, fill: css("--muted") });
+      t.textContent = g;
+    }
+
+    models.forEach((m, i) => {
+      const cy = top + i * rowH + rowH / 2;
+      const bars = [];
+      if (m.base != null) bars.push({ v: m.base, c: css("--bar-base"), k: "baseline" });
+      if (m.mtp  != null) bars.push({ v: m.mtp,  c: css("--bar-mtp"),  k: "MTP" });
+      const bh = 17, gap = 2;
+      const totalH = bars.length * bh + (bars.length - 1) * gap;
+      let by = cy - totalH / 2;
+
+      const lbl = el(svg, "text", { x: left - 12, y: cy + 4, "text-anchor": "end",
+        "font-size": 12.5, fill: css("--ink") });
+      lbl.textContent = m.name;
+
+      bars.forEach(b => {
+        el(svg, "path", { d: hBarPath(left, by, x(b.v) - left, bh), fill: b.c, class: "bar" });
+        const vt = el(svg, "text", { x: x(b.v) + 7, y: by + bh - 4.5,
+          "font-size": 11.5, fill: css("--ink-2") });
+        vt.textContent = b.v;
+        by += bh + gap;
+      });
+
+      const band = el(svg, "rect", { x: 0, y: top + i * rowH, width: W, height: rowH,
+        class: "row-band" });
+      const rows = bars.map(b => `${b.k}: <b>${b.v} tok/s</b>`).join("<br>");
+      const delta = (m.base && m.mtp) ? `<br>Δ <b>+${Math.round((m.mtp / m.base - 1) * 100)}%</b>` : "";
+      band.addEventListener("mousemove", e =>
+        showTip(e, `<b>${m.name}</b><br>${rows}${delta}<br><span style="opacity:.75">${m.note}</span>`));
+      band.addEventListener("mouseleave", hideTip);
+    });
+  }
+
+  /* ---- acceptance chart ---- */
+  function drawAcc() {
+    const svg = document.getElementById("accChart");
+    svg.innerHTML = "";
+    const acc = [0.77, 0.56, 0.39, 0.28];
+    const W = 420, H = 240, left = 40, right = 12, top = 14, bottom = 34;
+    const plotW = W - left - right, plotH = H - top - bottom;
+    const y = v => top + (1 - v) * plotH;
+
+    for (let g = 0; g <= 1.0001; g += 0.25) {
+      el(svg, "line", { x1: left, y1: y(g), x2: W - right, y2: y(g),
+        stroke: g === 0 ? css("--axis") : css("--grid"), "stroke-width": 1 });
+      const t = el(svg, "text", { x: left - 8, y: y(g) + 4, "text-anchor": "end",
+        "font-size": 10.5, fill: css("--muted") });
+      t.textContent = g.toFixed(2);
+    }
+
+    const bw = 24, slot = plotW / acc.length;
+    acc.forEach((v, i) => {
+      const bx = left + i * slot + (slot - bw) / 2;
+      el(svg, "path", { d: vBarPath(bx, y(v), bw, plotH - (y(v) - top)), fill: css("--bar-mtp"), class: "bar" });
+      const vt = el(svg, "text", { x: bx + bw / 2, y: y(v) - 7, "text-anchor": "middle",
+        "font-size": 11.5, fill: css("--ink-2") });
+      vt.textContent = v.toFixed(2);
+      const xt = el(svg, "text", { x: bx + bw / 2, y: H - 12, "text-anchor": "middle",
+        "font-size": 11, fill: css("--muted") });
+      xt.textContent = "pos " + (i + 1);
+      const band = el(svg, "rect", { x: left + i * slot, y: top, width: slot, height: plotH,
+        class: "row-band" });
+      band.addEventListener("mousemove", e =>
+        showTip(e, `<b>draft position ${i + 1}</b><br>acceptance <b>${v.toFixed(2)}</b>`));
+      band.addEventListener("mouseleave", hideTip);
+    });
+  }
+
+  function drawAll() { drawSpeed(); drawAcc(); }
+  drawAll();
+  new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll);
+})();
+</script>
+</body></html>

@@ -1,0 +1,59 @@
+{
+  "snapshot": "2026-07",
+  "source": "Sakana AI marketing chart (Fugu launch, June 2026)",
+  "provenance": "vendor",
+  "provenance_note": "Numbers chosen and arranged by the model's own maker. Conveniently omits Claude Mythos 5 (80.3) and Claude Fable 5 (80.0) — the two models that actually top SWE-bench Pro. See the independently-verified board below.",
+  "higher_is_better": true,
+  "models": ["Fugu-Ultra", "Fugu", "Opus 4.8", "Gemini 3.1", "GPT-5.5"],
+  "model_sources": {
+    "Fugu-Ultra": {
+      "verification": "self-reported",
+      "coi": true,
+      "note": "Sakana's own model. It's a router over a model pool, not a single LLM — scaffold, retry budget, and tool access are undisclosed. Not reproduced by neutral testers (remoteopenclaw, Jun 2026).",
+      "interesting": true,
+      "why": "The headline act: a routing SYSTEM benchmarked as if it were a model. Interesting precisely because you can't tell how much of the score is the model vs the scaffold — the whole COI case study in one column."
+    },
+    "Fugu": {
+      "verification": "self-reported",
+      "coi": true,
+      "note": "Same maker, same undisclosed scaffold, same lack of third-party reproduction.",
+      "interesting": false,
+      "why": "The latency-tuned little sibling. Same provenance problems, less to prove."
+    },
+    "Opus 4.8": {
+      "verification": "corroborated",
+      "coi": false,
+      "note": "SWE-bench Pro 69.2 matches independent trackers (BenchLM.ai, Artificial Analysis). A competitor placed the number, but it checks out.",
+      "interesting": true,
+      "why": "Tops the Artificial Analysis Intelligence Index (61.4) independently, yet Sakana's chart frames it as a loser by hiding the two Claudes above it. The gap between 'what the chart shows' and 'what independent trackers show' is the interesting part."
+    },
+    "GPT-5.5": {
+      "verification": "corroborated",
+      "coi": false,
+      "note": "SWE-bench Pro 58.6 matches BenchLM.ai independent tracking.",
+      "interesting": false,
+      "why": "Present mainly as a reference point; its numbers corroborate but it wins little in this framing."
+    },
+    "Gemini 3.1": {
+      "verification": "disputed",
+      "coi": false,
+      "note": "The independent SWE-bench Pro board lists 'Gemini 3.5 Flash' at 55.1 — no 'Gemini 3.1' at 54.2. Variant/label mismatch; treat the whole column as suspect.",
+      "interesting": true,
+      "why": "Interesting for the wrong reason: the column may not even be the model it claims to be. A labeling mismatch this basic taints every number under it."
+    }
+  },
+  "benchmarks": [
+    { "name": "SWE Bench Pro",          "scores": [73.7, 59.0, 69.2, 54.2, 58.6] },
+    { "name": "Terminal Bench 2.1",     "scores": [82.1, 80.2, 74.6, 70.3, 78.2] },
+    { "name": "LiveCodeBench",          "scores": [93.2, 92.9, 87.8, 88.5, 85.3] },
+    { "name": "LiveCodeBench Pro",      "scores": [90.8, 87.8, 84.8, 82.9, 88.4] },
+    { "name": "Humanity's Last Exam",   "scores": [50.0, 47.2, 49.8, 44.4, 41.4] },
+    { "name": "CharXiv Reasoning",      "scores": [86.6, 85.1, 84.2, 83.3, 84.1] },
+    { "name": "GPQA Diamond",           "scores": [95.5, 95.5, 92.0, 94.3, 93.6] },
+    { "name": "SciCode",                "scores": [58.7, 60.1, 53.5, 58.9, 56.1] },
+    { "name": "τ³ Banking",   "scores": [20.6, 21.7, 20.6, 8.4, 20.6] },
+    { "name": "Long Context Reasoning", "scores": [73.3, 74.7, 67.7, 72.7, 74.3] },
+    { "name": "MRCRv2",                 "scores": [93.6, 86.6, 87.9, 84.9, 94.8] },
+    { "name": "CTI-REALM",              "scores": [69.4, 67.5, 69.6, 56.0, 67.3] }
+  ]
+}
