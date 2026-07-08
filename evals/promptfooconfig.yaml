@@ -1,0 +1,35 @@
+# Gateway regression gate — the merge-blocking promptfoo config.
+# Runs on eval-def PRs only (see .github/workflows/eval-gate.yml). Tiny by
+# design: a handful of deterministic asserts against two gateway lanes proves
+# routing + auth + basic model sanity without burning tokens on every PR.
+# Anthropic lanes deliberately excluded (cache-sticky path stays clean).
+
+providers:
+  - id: openai:chat:zai/GLM-5.2
+    config:
+      apiBaseUrl: https://llm.unsigned.gg/v1
+      apiKeyEnvar: UNSIGNED_LLM_BENCH_KEY
+  - id: openai:chat:moonshotai/kimi-k2.7-code
+    config:
+      apiBaseUrl: https://llm.unsigned.gg/v1
+      apiKeyEnvar: UNSIGNED_LLM_BENCH_KEY
+
+prompts:
+  - "Answer with only the requested value, no prose. {{question}}"
+
+tests:
+  - vars:
+      question: "What is 17 * 3?"
+    assert:
+      - type: contains
+        value: "51"
+  - vars:
+      question: "Name the HTTP status code for Not Found."
+    assert:
+      - type: contains
+        value: "404"
+  - vars:
+      question: "Reply with exactly the word: ok"
+    assert:
+      - type: icontains
+        value: "ok"

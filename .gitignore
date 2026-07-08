@@ -1,2 +1,6 @@
 .wrangler/
 node_modules/
+
+# evals
+evals/logs/
+evals/.venv/
