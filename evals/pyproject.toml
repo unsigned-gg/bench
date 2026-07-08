@@ -1,0 +1,13 @@
+[project]
+name = "unsigned-bench-evals"
+version = "0.1.0"
+description = "inspect-ai eval harness for the unsigned model gateway (bench-off + regression tasks)"
+requires-python = ">=3.11"
+dependencies = [
+    # The PR #11 bench anchor — bump deliberately, PR per bump.
+    "inspect-ai==0.3.244",
+    "openai>=1.60",
+]
+
+[tool.uv]
+package = false

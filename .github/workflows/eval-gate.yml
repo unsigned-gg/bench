@@ -1,0 +1,46 @@
+# Merge gate for eval-definition changes (gap-closure verdict 2026-07-07:
+# promptfoo Action = the OSS merge gate; Inspect AI stays the deep-eval layer).
+# Scoped to evals/** so dashboard PRs never burn tokens. Uses the capped bench
+# key (OPS-465 unattended lane) — NEVER the shared interactive key.
+name: eval-gate
+
+on:
+  pull_request:
+    paths:
+      - "evals/**"
+
+permissions:
+  contents: read
+  pull-requests: write # PR summary comment
+
+jobs:
+  promptfoo:
+    runs-on: ubuntu-latest
+    # Skip cleanly until the operator adds the bench key secret (mirrors the
+    # deploy workflow's token gate pattern).
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: bench key present?
+        id: key
+        run: |
+          if [ -n "${{ secrets.UNSIGNED_LLM_BENCH_KEY }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::UNSIGNED_LLM_BENCH_KEY secret not set — eval gate skipped"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: promptfoo eval
+        if: steps.key.outputs.present == 'true'
+        uses: promptfoo/promptfoo-action@04839e664f52212b877170219dab0d7ad2bf6440 # v1.3
+        with:
+          config: evals/promptfooconfig.yaml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Flakiness handling per the verified pattern: pass-k-of-n tolerates
+          # grader/model variance; consistent failures still gate.
+          fail-on-threshold: "80"
+          repeat: "2"
+          repeat-min-pass: "1"
+          # Default disk cache; prune stale entries in CI.
+          cache-path: ~/.promptfoo/cache
+        env:
+          UNSIGNED_LLM_BENCH_KEY: ${{ secrets.UNSIGNED_LLM_BENCH_KEY }}
