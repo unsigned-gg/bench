@@ -3,6 +3,14 @@ on:
   pull_request:
     paths:
       - 'cerebral-src/**'
+      - 'visualization-wasm/**'
+      - 'third-party/**'
+      - 'scripts/build-gallery.mjs'
+      - 'scripts/gallery-contract.mjs'
+      - 'tests/cerebral-gallery.test.mjs'
+      - 'tests/gallery*'
+      - 'package.json'
+      - 'package-lock.json'
       - 'scripts/*cerebral*'
       - 'scripts/bench-data.mjs'
       - 'tests/cerebral-bench.test.mjs'
@@ -14,13 +22,22 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: cargo test --manifest-path visualization-wasm/Cargo.toml -- --test-threads=1
       - run: node --test tests/cerebral-bench.test.mjs
       - run: node scripts/build-cerebral.mjs
+      - run: npm run test:gallery
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:gallery:browser
       - name: Validate Cerebral Worker without deployment
         run: npx --yes wrangler@4.107.0 deploy --config wrangler.cerebral.jsonc --dry-run --outdir /tmp/cerebral-bench-worker
       - name: Retain reviewable static artifact
@@ -28,3 +45,10 @@ jobs:
         with:
           name: cerebral-bench
           path: cerebral/
+      - name: Retain gallery browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cerebral-gallery-browser
+          path: test-results/gallery/
+          if-no-files-found: ignore

@@ -2,6 +2,7 @@ import {readFileSync,writeFileSync,mkdirSync,cpSync,rmSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {loadData} from './bench-data.mjs';
+import {buildGallery} from './build-gallery.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url)),src=join(root,'cerebral-src'),out=join(root,'cerebral');
 const {data,parsed}=loadData(join(src,'data'));const sc=parsed['scorcher-local.json'],m=sc.bench.metrics,sa=parsed['saga-scheduler.json'];
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -33,5 +34,7 @@ rmSync(out,{recursive:true,force:true});mkdirSync(out,{recursive:true});
 for(const file of ['styles.css','app.js','favicon.svg','robots.txt','404.html'])cpSync(join(src,file),join(out,file));
 cpSync(join(src,'data'),join(out,'data'),{recursive:true});writeFileSync(join(out,'index.html'),template);
 const csv=['system,workload,evidence,value,unit,samples,source',...data.measurements.map(r=>[r.system,r.name,r.evidence,r.value,r.unit,r.samples??'',r.source].map(v=>'"'+String(v).replaceAll('"','""')+'"').join(','))].join('\n')+'\n';writeFileSync(join(out,'data/measurements.csv'),csv);
-writeFileSync(join(out,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://bench.cerebral.work/</loc></url></urlset>\n');
+writeFileSync(join(out,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://bench.cerebral.work/</loc></url><url><loc>https://bench.cerebral.work/visualizations/</loc></url></urlset>\n');
 console.log(`Built ${out}: static results, four evidence records, CSV export`);
+
+await buildGallery(join(out,'visualizations'));

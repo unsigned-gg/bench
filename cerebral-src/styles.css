@@ -8,3 +8,5 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 @media print{.header-tools,.filters,.segmented,.plan-control,.skip{display:none!important}[hidden][data-system]{display:block!important}body{background:white;color:black}.system{break-inside:avoid}.table-wrap{overflow:visible}footer{margin-top:40px}}
 @media(max-width:360px){.hero h1{font-size:clamp(46px,15.5vw,55px)}.system-filters{gap:12px}.system-filters button{font-size:11px}.evidence-label{font-size:9px}.snapshot-index>div{gap:10px}.plot-row{grid-template-columns:minmax(0,1fr) 105px}}
+/* The visualization lab extends the shared navigation. */
+@media(max-width:700px){.page-nav{flex-wrap:wrap;row-gap:14px}.page-nav .nav-download{margin-left:0}}

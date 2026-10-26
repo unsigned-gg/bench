@@ -7,3 +7,8 @@ evals/.venv/
 
 # Generated Cerebral benchmark site
 /cerebral/
+
+# Visualization kernel build artifacts
+/visualization-wasm/target/
+
+/test-results/

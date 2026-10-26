@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Visualization lab — Cerebral Bench</title>
+    <meta
+      name="description"
+      content="Explore 174 D3 gallery concepts through local Three.js visualizations and WebAssembly data processing."
+    />
+    <link rel="canonical" href="https://bench.cerebral.work/visualizations/" />
+    <link rel="icon" href="/favicon.svg" />
+    <link
+      rel="stylesheet"
+      href="https://cerebral.work/design/display-font.css?v=20261021-2258"
+    />
+    <link rel="stylesheet" href="/visualizations/lab.css" />
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem("cerebral-theme") ||
+          (matchMedia("(prefers-color-scheme:dark)").matches
+            ? "dark"
+            : "light");
+      } catch {}
+    </script>
+    <script type="module" src="/visualizations/lab.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#lab-content">Skip to visualization</a>
+    <header class="lab-header">
+      <a class="brand" href="/">CEREBRAL <span>/ Bench</span></a>
+      <nav aria-label="Main">
+        <a href="/">Benchmarks ↗</a
+        ><a href="https://cerebral.work">Institute ↗</a
+        ><button id="lab-theme" type="button" aria-label="Switch theme">
+          ◐
+        </button>
+      </nav>
+    </header>
+    <div class="lab-intro">
+      <div>
+        <p class="eyebrow">Visualization lab / Field notes 001</p>
+        <h1>174 ways to see<br />the data.</h1>
+      </div>
+      <div>
+        <p class="intro-lead">
+          A working collection of visual ideas.<br />Change a parameter. Follow
+          a pattern.
+        </p>
+        <p class="muted">
+          Based on the
+          <a href="https://observablehq.com/@d3/gallery">D3 gallery</a>. Local
+          examples use deterministic demonstration data. Benchmark measurements
+          keep their own <a href="/">evidence records</a>.
+        </p>
+        <div class="runtime">
+          <span id="wasm-status">WASM / initializing</span
+          ><span id="webgl-status">Three.js / initializing</span>
+        </div>
+      </div>
+    </div>
+    <div class="lab-layout">
+      <aside class="catalog">
+        <label for="catalog-search">Find a visualization</label
+        ><input
+          id="catalog-search"
+          type="search"
+          placeholder="Try treemap, contour, map…"
+        /><label for="catalog-category">Category</label
+        ><select id="catalog-category">
+          <option value="all">All 14 categories</option>
+          {{CATEGORY_OPTIONS}}
+        </select>
+        <div class="catalog-status" id="catalog-status" role="status">
+          174 examples
+        </div>
+        <nav id="catalog-list" aria-label="Visualization catalog">
+          {{CATALOG}}
+        </nav>
+        <p class="catalog-source">
+          Inventory / gallery @1120<br />Captured 26 October 2026<br /><a
+            href="/visualizations/inventory.json"
+            download
+            >Download coverage index ↓</a
+          >
+        </p>
+      </aside>
+      <main id="lab-content" tabindex="-1">
+        <section class="example-heading">
+          <div>
+            <p class="eyebrow" id="example-category">Bars / 072 of 174</p>
+            <h2 id="example-title">Bar chart</h2>
+            <p id="example-description" class="muted">
+              Compare values through position and length on a shared baseline.
+            </p>
+          </div>
+          <a id="example-source" href="https://observablehq.com/@d3/bar-chart/2"
+            >Original example ↗</a
+          >
+        </section>
+        <div class="viewer-controls">
+          <button id="play" type="button" aria-pressed="false">Play</button
+          ><label class="frame-control" id="frame-control"
+            >Frame
+            <input
+              id="frame"
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+            /><output id="frame-value" for="frame">50</output></label
+          ><button id="zoom-in" type="button" aria-label="Zoom in">+</button
+          ><button id="zoom-out" type="button" aria-label="Zoom out">−</button
+          ><button id="reset" type="button">Reset view</button
+          ><button id="action" type="button" hidden>Change view</button>
+        </div>
+        <figure class="visualization">
+          <div class="canvas-stage" id="canvas-stage">
+            <canvas
+              id="chart"
+              aria-labelledby="example-title"
+              aria-describedby="chart-caption"
+              tabindex="0"
+            ></canvas>
+            <div id="chart-labels" aria-hidden="true"></div>
+            <div id="brush-selection" hidden></div>
+            <div id="chart-tooltip" role="status" hidden></div>
+            <p id="renderer-error" role="status" hidden></p>
+          </div>
+          <figcaption id="chart-caption">
+            Deterministic demo values / Three.js rendering / WASM processing
+          </figcaption>
+        </figure>
+        <div class="parameter-bar">
+          <label id="detail-control"
+            >Detail / window
+            <input
+              id="detail"
+              type="range"
+              min="4"
+              max="32"
+              value="16"
+            /><output id="detail-value" for="detail">16</output></label
+          ><label
+            >Samples
+            <select id="samples">
+              <option value="96">96</option>
+              <option value="192" selected>192</option>
+              <option value="384">384</option>
+            </select></label
+          ><button id="download-data" type="button">Download demo CSV ↓</button>
+        </div>
+        <p class="interaction-help" id="interaction-help">
+          Move over the chart or use arrow keys to inspect values. The data
+          table is available below.
+        </p>
+        <div class="selection-status" id="selection-status" role="status"></div>
+        <noscript
+          ><p class="fallback-note">
+            The interactive renderer needs JavaScript, WebAssembly and WebGL.
+            The complete linked catalog remains available, and
+            <a href="/">benchmark results</a> can be read without JavaScript.
+          </p></noscript
+        >
+        <details class="data-details">
+          <summary>
+            Read the demonstration data
+            <span>Local / synthetic / not measured performance</span>
+          </summary>
+          <div
+            class="table-scroll"
+            role="region"
+            aria-label="Demonstration data"
+            tabindex="0"
+          >
+            <table>
+              <caption id="data-caption">
+                Generated sample values for the selected visualization
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Sample</th>
+                  <th scope="col">X</th>
+                  <th scope="col">Value</th>
+                  <th scope="col">Comparison</th>
+                  <th scope="col">Group</th>
+                </tr>
+              </thead>
+              <tbody id="data-body"></tbody>
+            </table>
+          </div>
+          <p class="muted">
+            The table lists the first 48 input samples. Download CSV for the
+            complete input. Layout algorithms derive positions, bins,
+            hierarchies or contours from these values; maps use Natural Earth /
+            US Atlas geometry. Frame-driven examples also use the displayed
+            animation state. These examples do not reproduce the source
+            notebooks’ historical datasets.
+          </p>
+        </details>
+        <section class="lab-method">
+          <p class="eyebrow">How to read this collection</p>
+          <div>
+            <h3>Keep the encoding.<br />Expose the assumptions.</h3>
+            <p>
+              Each entry links to the original author’s example. This lab
+              reimplements the visual concept with reusable local layouts, an
+              orthographic Three.js renderer, and compiled Rust numeric kernels.
+              Titles identify the source concept; values and historical-looking
+              profiles are demonstrations.
+            </p>
+            <p>
+              Pan and zoom examples expose their view controls. Brush examples
+              select a region. Hierarchical examples let you drill in and reset.
+              Motion is opt-in and respects reduced-motion settings.
+            </p>
+            <a
+              href="https://observablehq.com/@observablehq/-/collection/featured-libraries"
+              >Featured libraries ↗</a
+            ><br />
+            <a href="/visualizations/NOTICE.txt"
+              >Source & library attribution ↗</a
+            >
+          </div>
+        </section>
+      </main>
+    </div>
+    <footer>
+      <a href="https://cerebral.work">Cerebral Work Institute ↗</a
+      ><span>Patterns, with provenance.</span
+      ><a href="/">Return to benchmark evidence ↗</a>
+    </footer>
+  </body>
+</html>

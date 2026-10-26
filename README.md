@@ -79,3 +79,22 @@ npm run dev:cerebral
 ```
 
 See [the implementation and evidence guide](docs/bench-cerebral-work.md). The Cerebral PR workflow checks and packages the site; production deployment is a separate operator-approved step.
+
+### Visualization lab
+
+The Cerebral site includes `/visualizations/`: 174 entries from the pinned Observable D3 gallery, adapted to Three.js with Rust/WebAssembly data kernels. Local demonstration values are labeled separately from benchmark measurements; every entry links to its original author. The featured-libraries collection is linked alongside the attribution guide.
+
+The Cerebral build now needs Node 22+ and a Rust toolchain with `wasm32-unknown-unknown` installed:
+
+```sh
+rustup target add wasm32-unknown-unknown
+npm ci --ignore-scripts
+npm run build:cerebral
+npm run test:gallery
+npx playwright install chromium
+npm run test:gallery:browser
+```
+
+`CHROME_PATH=/usr/bin/google-chrome` can select an existing browser for the last command. Native kernel tests: `cargo test --manifest-path visualization-wasm/Cargo.toml -- --test-threads=1`.
+
+See [the gallery implementation guide](docs/visualization-gallery.md) and [validation evidence](docs/qa/visualization-gallery-2026-10-26.md). No remote Observable iframe or notebook runtime is required.
