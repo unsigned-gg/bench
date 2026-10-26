@@ -66,3 +66,16 @@ Manual deploy (from a machine with `wrangler login`):
 ```bash
 npm run deploy
 ```
+
+## Cerebral benchmark observatory
+
+`bench.cerebral.work` has its own source tree (`cerebral-src/`), generated artifact (`cerebral/`) and Worker config (`wrangler.cerebral.jsonc`). It presents Scorcher measurements, Cortex reference coverage and Saga simulation/fixture evidence in the Cerebral V2 visual system.
+
+```sh
+npm run test:cerebral
+npm run build:cerebral
+npm run check:cerebral
+npm run dev:cerebral
+```
+
+See [the implementation and evidence guide](docs/bench-cerebral-work.md). The Cerebral PR workflow checks and packages the site; production deployment is a separate operator-approved step.

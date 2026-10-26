@@ -1,0 +1,34 @@
+{
+  "kind": "fixture-validation",
+  "controls": [
+    {
+      "task": "pr1953",
+      "valid": true,
+      "negativeControlPassed": false,
+      "referencePatchPassed": [
+        true,
+        true
+      ],
+      "validatedAt": "2026-10-11T08:22:08.808682328Z",
+      "sourceSha256": "e207e3d330ce71a0a39abfab5a1b914b25cd70c7886aae414e8e699ef2f421a8",
+      "note": "Fixture validation with a no-op negative control and reference patches; no agent model was graded. Advisory judge output is excluded."
+    },
+    {
+      "task": "pr2082",
+      "valid": true,
+      "negativeControlPassed": false,
+      "referencePatchPassed": [
+        true,
+        true
+      ],
+      "validatedAt": "2026-10-11T08:21:58.279670733Z",
+      "sourceSha256": "f69d48f1c2e7220ca1e8b9acc42c8638212dc06941bae6eed2d0544d1ef1b669",
+      "note": "Fixture validation with a no-op negative control and reference patches; no agent model was graded. Advisory judge output is excluded."
+    }
+  ],
+  "sourceContext": {
+    "repository": "cerebral-work/saga",
+    "revision": "63b2bc39d4a864bafc86550e37be3743ad62cbf9",
+    "path": ".saga/evals/syn/<task>/validation.json"
+  }
+}

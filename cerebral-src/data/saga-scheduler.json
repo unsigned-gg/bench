@@ -1,0 +1,181 @@
+{
+  "schema": "saga.plan.bench.v1",
+  "rows": [
+    {
+      "strategy": "cpm",
+      "plan": "bench-diamond",
+      "max_concurrency": 3,
+      "waves": 3,
+      "makespan": 31,
+      "slip": 5,
+      "drum_serial": 10,
+      "utilization_ppm": 333333,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "dbr",
+      "plan": "bench-diamond",
+      "max_concurrency": 3,
+      "waves": 3,
+      "makespan": 31,
+      "slip": 5,
+      "drum_serial": 10,
+      "utilization_ppm": 333333,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "dsm",
+      "plan": "bench-diamond",
+      "max_concurrency": 3,
+      "waves": 3,
+      "makespan": 31,
+      "slip": 5,
+      "drum_serial": 10,
+      "utilization_ppm": 333333,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "cpm",
+      "plan": "bench-chain-stragglers",
+      "max_concurrency": 2,
+      "waves": 4,
+      "makespan": 31,
+      "slip": 0,
+      "drum_serial": 2,
+      "utilization_ppm": 532258,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "dbr",
+      "plan": "bench-chain-stragglers",
+      "max_concurrency": 2,
+      "waves": 5,
+      "makespan": 32,
+      "slip": 1,
+      "drum_serial": 2,
+      "utilization_ppm": 515625,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "dsm",
+      "plan": "bench-chain-stragglers",
+      "max_concurrency": 2,
+      "waves": 4,
+      "makespan": 31,
+      "slip": 0,
+      "drum_serial": 2,
+      "utilization_ppm": 532258,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "cpm",
+      "plan": "bench-lock-bound",
+      "max_concurrency": 3,
+      "waves": 4,
+      "makespan": 36,
+      "slip": 25,
+      "drum_serial": 30,
+      "utilization_ppm": 472222,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "dbr",
+      "plan": "bench-lock-bound",
+      "max_concurrency": 3,
+      "waves": 4,
+      "makespan": 31,
+      "slip": 20,
+      "drum_serial": 30,
+      "utilization_ppm": 548387,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "dsm",
+      "plan": "bench-lock-bound",
+      "max_concurrency": 3,
+      "waves": 4,
+      "makespan": 36,
+      "slip": 25,
+      "drum_serial": 30,
+      "utilization_ppm": 472222,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "cpm",
+      "plan": "bench-probe-fanout",
+      "max_concurrency": 3,
+      "waves": 3,
+      "makespan": 41,
+      "slip": 10,
+      "drum_serial": 30,
+      "utilization_ppm": 414634,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "dbr",
+      "plan": "bench-probe-fanout",
+      "max_concurrency": 3,
+      "waves": 3,
+      "makespan": 41,
+      "slip": 10,
+      "drum_serial": 30,
+      "utilization_ppm": 414634,
+      "held": 0,
+      "trips": {},
+      "error": null
+    },
+    {
+      "strategy": "dsm",
+      "plan": "bench-probe-fanout",
+      "max_concurrency": 3,
+      "waves": 4,
+      "makespan": 41,
+      "slip": 10,
+      "drum_serial": 30,
+      "utilization_ppm": 414634,
+      "held": 0,
+      "trips": {},
+      "error": null
+    }
+  ],
+  "capture": {
+    "capturedAt": "2026-10-26",
+    "kind": "simulation",
+    "command": "saga plan bench --json <four benchmark plan files>",
+    "binarySha256": "fdec108c223f6f9ec8fc42a4e6dbfbec2141136dd56d256f047a1314b8ec4294",
+    "sourceContext": {
+      "repository": "cerebral-work/saga",
+      "revision": "63b2bc39d4a864bafc86550e37be3743ad62cbf9",
+      "path": "crates/saga-domain/src/scheduling/bench.rs",
+      "sha256": "b871a4e14fb4a90f507ed14c5d05f56ff13a3c8894294398417ff347d5d1fd73"
+    },
+    "unit": "plan time units",
+    "profile": "debug; virtual-clock simulation",
+    "limitations": [
+      "Runs the scheduler model; no agent tasks are executed.",
+      "Makespan is expressed in declared plan time units, not milliseconds.",
+      "No host-pressure trace was supplied.",
+      "Executable identity is recorded separately from inspected source context."
+    ]
+  }
+}

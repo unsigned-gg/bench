@@ -1,0 +1,30 @@
+name: Cerebral benchmark site
+on:
+  pull_request:
+    paths:
+      - 'cerebral-src/**'
+      - 'scripts/*cerebral*'
+      - 'scripts/bench-data.mjs'
+      - 'tests/cerebral-bench.test.mjs'
+      - 'wrangler.cerebral.jsonc'
+      - '.github/workflows/cerebral-bench.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/cerebral-bench.test.mjs
+      - run: node scripts/build-cerebral.mjs
+      - name: Validate Cerebral Worker without deployment
+        run: npx --yes wrangler@4.107.0 deploy --config wrangler.cerebral.jsonc --dry-run --outdir /tmp/cerebral-bench-worker
+      - name: Retain reviewable static artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cerebral-bench
+          path: cerebral/

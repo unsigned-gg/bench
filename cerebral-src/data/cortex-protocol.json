@@ -1,0 +1,21 @@
+{
+  "kind": "protocol",
+  "capturedAt": "2026-10-26",
+  "name": "Cortex reference suite 0056",
+  "sourceContext": {
+    "repository": "cerebral-work/cortex",
+    "revision": "7d2f9a3f3c65386159080dee9f77742b0dad9195",
+    "path": "crates/cortex-edge/tests/spec_0056_bench.rs",
+    "sha256": "e851bdde55cf07e6f072c51943baa47202ff268aa5fb2f846c9fd0643f789ddc"
+  },
+  "result": null,
+  "coverage": [
+    "Stateful and adaptive routing",
+    "Verified object-store writes and reads",
+    "Sealed-descriptor and copied-socket delivery",
+    "Concurrent miss coalescing",
+    "Workspace overlay setup",
+    "Custody-store operations"
+  ],
+  "note": "Protocol inspected. A separate Cortex result receipt has not been attached. Scorcher derives from this suite; its local numbers remain Scorcher results."
+}
