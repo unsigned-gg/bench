@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cerebral-bench",
+  "account_id": "07ae57cca8fc1a438f9c9b875d1e2283",
+  "compatibility_date": "2026-06-20",
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./cerebral",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "bench.cerebral.work", "custom_domain": true }
+  ]
+}

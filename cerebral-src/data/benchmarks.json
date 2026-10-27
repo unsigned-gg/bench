@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "2026-10-26",
+  "publisher": "Cerebral Work Institute",
+  "designSource": "https://cerebral.work/",
+  "systems": [
+    {
+      "id": "scorcher",
+      "name": "Scorcher",
+      "number": "01",
+      "type": "measured",
+      "subtitle": "The transport layer",
+      "summary": "Routing, shared memory, verified object storage. A local microbenchmark capture with the sample size beside every result.",
+      "record": "scorcher-local.json"
+    },
+    {
+      "id": "cortex",
+      "name": "Cortex",
+      "number": "02",
+      "type": "protocol",
+      "subtitle": "The coordination layer",
+      "summary": "The reference edge, cache and custody protocol. Coverage is documented; a separate result receipt is still to come.",
+      "record": "cortex-protocol.json"
+    },
+    {
+      "id": "saga",
+      "name": "Saga",
+      "number": "03",
+      "type": "simulation",
+      "subtitle": "The orchestration layer",
+      "summary": "Three scheduling strategies, four declared plans, one virtual clock. Plus the negative and reference controls behind the evaluation fixtures.",
+      "record": "saga-scheduler.json"
+    }
+  ],
+  "measurements": [
+    {
+      "id": "scorcher-affinity",
+      "system": "scorcher",
+      "name": "Affinity routing",
+      "category": "routing",
+      "evidence": "measured",
+      "value": 257,
+      "unit": "ns",
+      "percentile": "p50",
+      "samples": 10000,
+      "source": "scorcher-local.json",
+      "pointer": "/bench/metrics/ring_p50_ns",
+      "samplePointer": "/bench/metrics/iters"
+    },
+    {
+      "id": "scorcher-cache",
+      "system": "scorcher",
+      "name": "Hot object-cache lookup",
+      "category": "cache",
+      "evidence": "measured",
+      "value": 92,
+      "unit": "ns",
+      "percentile": "p50",
+      "samples": 5000,
+      "source": "scorcher-local.json",
+      "pointer": "/bench/metrics/tier0_p50_ns",
+      "samplePointer": "/bench/metrics/tier0_iters"
+    },
+    {
+      "id": "scorcher-roundtrip",
+      "system": "scorcher",
+      "name": "8 KiB shared-memory roundtrip",
+      "category": "transport",
+      "evidence": "measured",
+      "value": 9.138,
+      "unit": "\u00b5s",
+      "percentile": "p50",
+      "samples": 100,
+      "source": "scorcher-local.json",
+      "pointer": "/shm_roundtrip/latency_p50_us",
+      "samplePointer": "/shm_roundtrip/round_trips"
+    },
+    {
+      "id": "scorcher-coalescing",
+      "system": "scorcher",
+      "name": "Upstream calls for 64 concurrent misses",
+      "category": "coalescing",
+      "evidence": "measured",
+      "value": 1,
+      "unit": "calls",
+      "samples": 64,
+      "source": "scorcher-local.json",
+      "pointer": "/bench/metrics/actual_calls",
+      "samplePointer": "/bench/metrics/concurrency"
+    },
+    {
+      "id": "saga-bench-diamond-cpm",
+      "system": "saga",
+      "name": "diamond / CPM",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 31,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-diamond",
+      "strategy": "cpm"
+    },
+    {
+      "id": "saga-bench-diamond-dbr",
+      "system": "saga",
+      "name": "diamond / DBR",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 31,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-diamond",
+      "strategy": "dbr"
+    },
+    {
+      "id": "saga-bench-diamond-dsm",
+      "system": "saga",
+      "name": "diamond / DSM",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 31,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-diamond",
+      "strategy": "dsm"
+    },
+    {
+      "id": "saga-bench-chain-stragglers-cpm",
+      "system": "saga",
+      "name": "chain-stragglers / CPM",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 31,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-chain-stragglers",
+      "strategy": "cpm"
+    },
+    {
+      "id": "saga-bench-chain-stragglers-dbr",
+      "system": "saga",
+      "name": "chain-stragglers / DBR",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 32,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-chain-stragglers",
+      "strategy": "dbr"
+    },
+    {
+      "id": "saga-bench-chain-stragglers-dsm",
+      "system": "saga",
+      "name": "chain-stragglers / DSM",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 31,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-chain-stragglers",
+      "strategy": "dsm"
+    },
+    {
+      "id": "saga-bench-lock-bound-cpm",
+      "system": "saga",
+      "name": "lock-bound / CPM",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 36,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-lock-bound",
+      "strategy": "cpm"
+    },
+    {
+      "id": "saga-bench-lock-bound-dbr",
+      "system": "saga",
+      "name": "lock-bound / DBR",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 31,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-lock-bound",
+      "strategy": "dbr"
+    },
+    {
+      "id": "saga-bench-lock-bound-dsm",
+      "system": "saga",
+      "name": "lock-bound / DSM",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 36,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-lock-bound",
+      "strategy": "dsm"
+    },
+    {
+      "id": "saga-bench-probe-fanout-cpm",
+      "system": "saga",
+      "name": "probe-fanout / CPM",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 41,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-probe-fanout",
+      "strategy": "cpm"
+    },
+    {
+      "id": "saga-bench-probe-fanout-dbr",
+      "system": "saga",
+      "name": "probe-fanout / DBR",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 41,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-probe-fanout",
+      "strategy": "dbr"
+    },
+    {
+      "id": "saga-bench-probe-fanout-dsm",
+      "system": "saga",
+      "name": "probe-fanout / DSM",
+      "category": "scheduling",
+      "evidence": "simulation",
+      "value": 41,
+      "unit": "plan units",
+      "source": "saga-scheduler.json",
+      "plan": "bench-probe-fanout",
+      "strategy": "dsm"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "scorcher-local.json",
+      "sha256": "bfc189c52c6e80ba63ad1dc10cdbbe8bb8c1728a27a7a9feb135926f3c822767"
+    },
+    {
+      "file": "cortex-protocol.json",
+      "sha256": "db4d450d075d8a64b14f40084627ba2a861590c132eaad9df3d5aa7602967b22"
+    },
+    {
+      "file": "saga-scheduler.json",
+      "sha256": "ef6961755beec759958eef1b5704f4efe5986acd0f2f62a1348901fa89761c44"
+    },
+    {
+      "file": "saga-controls.json",
+      "sha256": "d98bb59fa86c82eabda47c6aaab7c51f7a93aaf79c152f941afc967ef3bdf8a8"
+    }
+  ]
+}
