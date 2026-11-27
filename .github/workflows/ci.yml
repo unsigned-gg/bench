@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   secrets:
-    runs-on: ubuntu-latest
+    runs-on: {group: ent-default, labels: [self-hosted]}  # estate runner fleet (SOP: ci-runner-always-internal)
     steps:
       - uses: actions/checkout@v4
         with:

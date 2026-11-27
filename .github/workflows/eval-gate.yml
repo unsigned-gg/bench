@@ -15,11 +15,14 @@ permissions:
 
 jobs:
   promptfoo:
-    runs-on: ubuntu-latest
+    runs-on: {group: ent-default, labels: [self-hosted]}  # estate runner fleet (SOP: ci-runner-always-internal)
     # Skip cleanly until the operator adds the bench key secret (mirrors the
     # deploy workflow's token gate pattern).
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: bench key present?
         id: key
         run: |

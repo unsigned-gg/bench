@@ -14,11 +14,14 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: {group: ent-default, labels: [self-hosted]}  # estate runner fleet (SOP: ci-runner-always-internal)
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0            # gitleaks needs full history
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: validate benchmark data (JSON well-formed + score rows aligned)
         shell: bash
         run: |
@@ -48,9 +51,12 @@ jobs:
   deploy:
     needs: validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: {group: ent-default, labels: [self-hosted]}  # estate runner fleet (SOP: ci-runner-always-internal)
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       # Gate on the secret so CI stays green until the token is added, rather
       # than hard-failing every push. Job-level `if` can't read secrets, so we
       # bounce the secret through env and check it in a step.
