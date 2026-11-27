@@ -14,11 +14,15 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: {group: ent-cygnus, labels: [cygnus]}  # hardened Kata ARC fleet
+    container: harbor.unsigned.gg/platform/ci-rust-runner:v0.1.14@sha256:d73d3748c0f22e7386109d12b01ccdf7282b0f529aab2c629b4e5ed558d42bc1
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0            # gitleaks needs full history
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: validate benchmark data (JSON well-formed + score rows aligned)
         shell: bash
         run: |
@@ -48,9 +52,13 @@ jobs:
   deploy:
     needs: validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: {group: ent-cygnus, labels: [cygnus]}  # hardened Kata ARC fleet
+    container: harbor.unsigned.gg/platform/ci-rust-runner:v0.1.14@sha256:d73d3748c0f22e7386109d12b01ccdf7282b0f529aab2c629b4e5ed558d42bc1
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       # Gate on the secret so CI stays green until the token is added, rather
       # than hard-failing every push. Job-level `if` can't read secrets, so we
       # bounce the secret through env and check it in a step.

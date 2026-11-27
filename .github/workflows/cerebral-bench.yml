@@ -21,6 +21,9 @@ permissions:
   contents: read
 jobs:
   validate:
+    # Playwright --with-deps requires sudo apt-get (unavailable on no-new-privileges self-hosted runners).
+    # Scoped off pull_request per SOP: ci-runner-always-internal (runs on workflow_dispatch).
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
